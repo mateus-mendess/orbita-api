@@ -26,12 +26,14 @@ public class User {
 
     private String password;
 
-    private Boolean status;
+    private Boolean enabled;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
+        this.enabled = false;
         this.createdAt = LocalDateTime.now();
     }
 }
