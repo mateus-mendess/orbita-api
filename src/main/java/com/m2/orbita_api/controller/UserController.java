@@ -1,6 +1,8 @@
 package com.m2.orbita_api.controller;
 
 import com.m2.orbita_api.model.dto.request.UserRequest;
+import com.m2.orbita_api.model.dto.response.UserResponse;
+import com.m2.orbita_api.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +18,16 @@ import java.net.URI;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<Void> save(@RequestBody @Valid UserRequest request) {
+        UserResponse response = userService.save(request);
+
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand()
+                .buildAndExpand(response.id())
                 .toUri();
 
         return ResponseEntity.created(uri).build();
