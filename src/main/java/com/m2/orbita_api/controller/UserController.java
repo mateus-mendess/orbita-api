@@ -1,6 +1,7 @@
 package com.m2.orbita_api.controller;
 
 import com.m2.orbita_api.model.dto.request.UserRequest;
+import com.m2.orbita_api.model.dto.request.VerificationCodeRequest;
 import com.m2.orbita_api.model.dto.response.UserResponse;
 import com.m2.orbita_api.service.UserService;
 import jakarta.validation.Valid;
@@ -31,5 +32,12 @@ public class UserController {
                 .toUri();
 
         return ResponseEntity.created(uri).build();
+    }
+
+    @PostMapping("/verification-code")
+    public ResponseEntity<Void> verifyEmail(@RequestBody @Valid VerificationCodeRequest request) {
+        userService.verifyEmail(request);
+
+        return ResponseEntity.noContent().build();
     }
 }
