@@ -1,4 +1,6 @@
 package com.m2.orbita_api.event;
 
-public record UserRegistrationEvent(String email) {
+import java.util.UUID;
+
+public record UserRegistrationEvent(String email, UUID userId) {
 }

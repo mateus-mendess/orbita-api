@@ -15,7 +15,7 @@ public class UserRegistrationListener {
 
     @EventListener
     public void handleUserRegistrationEvent(UserRegistrationEvent event) {
-        String code = otpService.generateCode();
+        String code = otpService.generateCode(event.userId());
 
         String message = "Código de verificação: " + code;
         emailService.sendEmail(event.email(), "Orbita - App", message);
