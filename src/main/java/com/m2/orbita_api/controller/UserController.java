@@ -36,7 +36,7 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Email already registered")
     })
     @PostMapping("/register")
-    public ResponseEntity<Void> save(@RequestBody @Valid UserRequest request) {
+    public ResponseEntity<UserResponse> save(@RequestBody @Valid UserRequest request) {
         UserResponse response = userService.save(request);
 
         URI uri = ServletUriComponentsBuilder
@@ -45,7 +45,7 @@ public class UserController {
                 .buildAndExpand(response.id())
                 .toUri();
 
-        return ResponseEntity.created(uri).build();
+        return ResponseEntity.created(uri).body(response);
     }
 
     @Operation(summary = "Verify email", description = """
