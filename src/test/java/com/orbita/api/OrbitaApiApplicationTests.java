@@ -2,13 +2,11 @@ package com.orbita.api;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class OrbitaApiApplicationTests {
+class OrbitaApiApplicationTests extends AbstractIntegrationTest {
 
 	@Test
-	@DisplayName("Should load the Spring application context cleanly")
+	@DisplayName("Should load the Spring application context cleanly with Testcontainers infrastructure")
 	void contextLoads() {
 	}
 
