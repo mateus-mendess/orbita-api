@@ -30,7 +30,7 @@ Do **not** edit any files yet. Present a short, concrete plan containing:
 ## Phase 3: Implementation & Verification Loop
 
 Once the plan is approved:
-1. Apply the relevant technical skills for the task (`spring-modular-mvc`, `firebase-firestore`, `spring-data-redis`).
+1. Apply the relevant technical skills for the task (`spring-modular-mvc`, `spring-data-mongodb`, `spring-data-redis`).
 2. Implement strictly the approved scope — no unrequested refactors or extras.
 3. Write the planned unit, integration, and module verification tests following `automated-testing`.
 4. Run `./mvnw verify` and inspect the real output.

@@ -1,6 +1,6 @@
 ---
 name: automated-testing
-description: Standards for unit, integration, and module verification tests using JUnit 5, Mockito, MockMvc, and Testcontainers (Firestore emulator and Redis). Use whenever writing, updating, or reviewing tests.
+description: Standards for unit, integration, and module verification tests using JUnit 5, Mockito, MockMvc, and Testcontainers (MongoDB and Redis). Use whenever writing, updating, or reviewing tests.
 ---
 
 # Automated Testing Skill
@@ -14,16 +14,16 @@ Follow `AGENTS.md` (Sections 2.4 and 9) for the definition of done, test integri
 - Use `@ParameterizedTest` (`@ValueSource`, `@CsvSource`, `@MethodSource`) for validation matrices and boundary inputs instead of duplicating near-identical test methods.
 - Keep test setup local and readable; avoid heavy shared `@BeforeEach` fixtures that hide what a test actually depends on.
 
-## Unit Tests (Services, Validators, Mappers)
+## Unit Tests (Services)
 
 - Use pure JUnit 5 with `@ExtendWith(MockitoExtension.class)`. Never boot the Spring context (`@SpringBootTest`) for unit tests.
-- Mock only direct collaborators (e.g., `<Resource>Repository`, `<Resource>Validator`, `Clock`/ID helpers).
-- **Never mock Firebase Admin SDK internals** (`Firestore`, `CollectionReference`, `DocumentReference`, `ApiFuture`). Chained SDK mocks are brittle and test nothing real; cover persistence in integration tests instead.
+- Mock only I/O and infrastructure boundaries (`<Resource>Repository`, mail sender, token/clock helpers).
+- **Use real collaborators for pure logic:** Instantiate real `<Resource>Validator` (and MapStruct mappers when stateless) inside service unit tests instead of mocking them. Do **not** create separate `*ValidatorTest` classes — cover all validation success and failure paths directly through the service tests.
 - Assert return values and thrown `OrbitaApiException` (`ErrorCode` and HTTP status). Use `Mockito.verify(...)` only for meaningful side effects (such as persistence calls or preventing writes on failure).
 
 ## Integration Tests (MockMvc + Testcontainers)
 
-- Test end-to-end HTTP endpoints with `MockMvc` against real **Testcontainers** instances for the **Firestore Emulator** and **Redis**.
+- Test end-to-end HTTP endpoints with `MockMvc` against real **Testcontainers** instances (`MongoDBContainer` and Redis) wired via `@ServiceConnection` or `@DynamicPropertySource`.
 - Reuse shared container definitions (singleton container pattern or a shared test configuration) via `@DynamicPropertySource` so the test suite stays fast.
 - **Ensure test isolation:** Use a unique `userId` per test (and clean up or flush Redis/emulator state when needed) so tests never depend on execution order.
 - Verify the full contract:

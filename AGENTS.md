@@ -25,10 +25,10 @@ Ask before changing the architecture, the data model or the auth flow.
    Java 25 (LTS), Spring Boot 4.1.3, Maven
    Spring Modulith (module structure and verification)
    Spring Security + JWT signed with RSA
-   Cloud Firestore via Firebase Admin SDK (no JPA, no Flyway)
+   MongoDB via Spring Data MongoDB (no JPA, no Flyway)
    Redis (Spring Data Redis) for verification codes and short-lived data
-   Spring Mail (SMTP), Lombok, MapStruct, Bean Validation
-   Tests: JUnit 5, Mockito, MockMvc, Testcontainers (Firestore emulator and Redis)
+   Spring Mail (SMTP), Lombok, MapStruct, Bean Validation 
+   Tests: JUnit 5, Mockito, MockMvc, Testcontainers (MongoDB and Redis)
    API docs: springdoc-openapi (Swagger)
 
 This is the planned stack. Rule 2.3 still applies: ask before adding each dependency to the build.
@@ -37,7 +37,7 @@ This is the planned stack. Rule 2.3 still applies: ask before adding each depend
 
 System: modular monolith with Spring Modulith. Each feature is a top-level package under the base package and is one module. Modules must not depend on each other's internal package.
 
-Code: Spring MVC layers inside each module: Controller → Service → Repository → Firestore.
+Code: Spring MVC layers inside each module: Controller → Service → Repository → MongoDB.
 
 com.orbita.api
 ├── OrbitaApiApplication.java
@@ -62,14 +62,14 @@ Rules:
 
 api/ is exposed as a named interface (@NamedInterface("api") in its package-info.java). Nothing in internal/ may be accessed from outside the module.
 task, habit and note must not reference each other. If a cross-module need appears, ask first; if approved, expose it through the owner's api/.
-Controllers: HTTP only. Services: business rules. Repositories: the only code that touches Firestore. Never expose Firestore models in responses; use DTOs.
+Controllers: HTTP only. Services: business rules. Repositories: the only code that touches MongoDB. Never expose persistence models in responses; use DTOs.
 Keep ApplicationModules.of(OrbitaApiApplication.class).verify() passing.
-5. Data (Firestore)
-   Data is per user: users/{userId}/tasks, users/{userId}/habits, users/{userId}/notes.
-   userId always comes from the authenticated principal, never from the client.
-   Paginate or limit list queries.
-   No schema migrations. Composite indexes live in firestore.indexes.json; data migrations (if ever needed) are idempotent scripts in migrations/, tracked in a _migrations collection.
-   Credentials and keys come from environment variables. Never commit secrets.
+5. Data (MongoDB)
+      Top-level collections: users, tasks, habits, notes.
+      User-owned documents (tasks, habits, notes) carry an indexed userId field. userId always comes from the authenticated principal, never from the client.
+      Paginate or limit list queries using Spring Data Pageable.
+      Indexes are declared via @Indexed / @CompoundIndex (no Flyway; data migrations, if ever needed, are idempotent scripts in migrations/).
+      Connection URIs and credentials come from environment variables. Never commit secrets.
 6. Auth and verification codes
    Passwords hashed with BCrypt. Login and e-mail verification return a JWT access token signed with an RSA private key (Base64 PEM via env vars). Access token only: no refresh token, no logout endpoint.
    A 6-digit e-mail code is required for registration and password recovery:
@@ -88,9 +88,11 @@ application.properties: everything shared by development and production.
 
 A property lives in exactly one file. Secrets are never written in any of them; use environment variables (${VAR}).
 
+- When introducing any external integration or secret (Firebase, Redis, RSA keys, SMTP, etc.), wire it explicitly via `${VAR_NAME}` placeholders without asking for real values. List the required variable names and expected formats in the implementation plan and final handoff so the developer can configure them locally.
+
 9. Testing and definition of done
    Unit tests: JUnit 5 + Mockito, for services and other business logic.
-   Integration tests: MockMvc, with Testcontainers for the real infrastructure (Firestore emulator and Redis), so they resemble production.
+   Integration tests: MockMvc, with Testcontainers for the real infrastructure (MongoDB and Redis), so they resemble production.
    Cover success and failure paths for everything you implement.
    Before reporting a task as done: write the tests, run them (./mvnw verify), and make sure they all pass. Report the result honestly, including anything that could not be run.
    Details of how to write tests are in the testing skill.
@@ -103,4 +105,4 @@ A property lives in exactly one file. Secrets are never written in any of them; 
     When something is ambiguous, ask a short question (see rule 2.1).
 11. Skills
 
-Procedures such as testing, API documentation, Firestore data access, commits and the feature workflow live in separate skills. Use them instead of improvising. The "senior Java developer" role is defined separately and is not part of this file.
+Procedures such as testing, API documentation, MongoDB data access, commits and the feature workflow live in separate skills. Use them instead of improvising. The "senior Java developer" role is defined separately and is not part of this file.
